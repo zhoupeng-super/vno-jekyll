@@ -3,8 +3,10 @@ layout: post
 title: ScheduledThreadPoolExecutor - juc
 date: 2020-09-04
 ---
+# ScheduledThreadPoolExecutor
 
 ### 1、介绍：
+
 > 自JDK1.5开始，JDK提供了ScheduledThreadPoolExecutor类来支持周期性的调度，在这之前的实现需要Timer和TimerTask或者第三方工具完成。但Timer有很多缺陷。
 
 >> - Timer是单线程的。
@@ -31,50 +33,50 @@ date: 2020-09-04
 ### 2、ScheduledThreadPoolExecutor的使用
 
 > 举个例子说明ScheduledThreadPoolExecutor的使用
-
-``` java
-public class ScheduledThreadPoolTest {
-    public static void main(String[] args) throws InterruptedException {
-        // 创建大小为5的线程池
-        ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
-        for (int i = 0; i < 3; i++) {
-            Task worker = new Task("task-" + i);
-            // 只执行一次
-//          scheduledThreadPool.schedule(worker, 5, TimeUnit.SECONDS);
-            // 周期性执行，每5秒执行一次
-            scheduledThreadPool.scheduleAtFixedRate(worker, 0,5, TimeUnit.SECONDS);
-        }
-        Thread.sleep(10000);
-        System.out.println("Shutting down executor...");
-        // 关闭线程池
-        scheduledThreadPool.shutdown();
-        boolean isDone;
-        // 等待线程池终止
-        do {
-            isDone = scheduledThreadPool.awaitTermination(1, TimeUnit.DAYS);
-            System.out.println("awaitTermination...");
-        } while(!isDone);
-        System.out.println("Finished all threads");
-    }
-}
-class Task implements Runnable {
-    private String name;
-    public Task(String name) {
-        this.name = name;
-    }
-    @Override
-    public void run() {
-        System.out.println("name = " + name + ", startTime = " + new Date());
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("name = " + name + ", endTime = " + new Date());
-    }
-}
-```
-
+>
+> ````java
+> public class ScheduledThreadPoolTest {
+>     public static void main(String[] args) throws InterruptedException {
+>         // 创建大小为5的线程池
+>         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
+>         for (int i = 0; i < 3; i++) {
+>             Task worker = new Task("task-" + i);
+>             // 只执行一次
+> //          scheduledThreadPool.schedule(worker, 5, TimeUnit.SECONDS);
+>             // 周期性执行，每5秒执行一次
+>             scheduledThreadPool.scheduleAtFixedRate(worker, 0,5, TimeUnit.SECONDS);
+>         }
+>         Thread.sleep(10000);
+>         System.out.println("Shutting down executor...");
+>         // 关闭线程池
+>         scheduledThreadPool.shutdown();
+>         boolean isDone;
+>         // 等待线程池终止
+>         do {
+>             isDone = scheduledThreadPool.awaitTermination(1, TimeUnit.DAYS);
+>             System.out.println("awaitTermination...");
+>         } while(!isDone);
+>         System.out.println("Finished all threads");
+>     }
+> }
+> class Task implements Runnable {
+>     private String name;
+>     public Task(String name) {
+>         this.name = name;
+>     }
+>     @Override
+>     public void run() {
+>         System.out.println("name = " + name + ", startTime = " + new Date());
+>         try {
+>             Thread.sleep(1000);
+>         } catch (InterruptedException e) {
+>             e.printStackTrace();
+>         }
+>         System.out.println("name = " + name + ", endTime = " + new Date());
+>     }
+> }
+> ````
+>
 > 下面来分析下ScheduledThreadPoolExecutor的实现过程
 
 ### 3、ScheduledThreadPoolExecutor的实现过程
@@ -482,11 +484,11 @@ class Task implements Runnable {
 >
 > 堆结构如下图所示：
 >
-> ![image-20200903151011870](/Users/peng/Library/Application Support/typora-user-images/image-20200903151011870.png)
+> ![image-20200903151011870](/vno-jekyll/assets/images/juc/image-20200903151011870.png)
 >
 > 可见DelayWorkQueue是基于最小堆结构的队列。堆结构可以使用数组表示，可以转换成如下的数组：
 >
-> ![image-20200903151222477](/Users/peng/Library/Application Support/typora-user-images/image-20200903151222477.png)
+> ![image-20200903151222477](/vno-jekyll/assets/images/juc/image-20200903151222477.png)
 >
 > 在这种结构中可以发现有如下特性：
 >
@@ -600,15 +602,15 @@ class Task implements Runnable {
 >
 > > **1、先将新的节点添加到数组的尾部，这时新节点的索引k为7：**
 > >
-> > ![image-20200903154648437](/Users/peng/Library/Application Support/typora-user-images/image-20200903154648437.png)
+> > ![image-20200903154648437](/vno-jekyll/assets/images/juc/image-20200903154648437.png)
 > >
 > > **2、计算新父节点的索引：parent = (k - 1) >>> 1，parent = 3，那么queue[3]的时间间隔值为8，因为 5 < 8 ，将执行queue[7] = queue[3]：**
 > >
-> > ![image-20200903154843414](/Users/peng/Library/Application Support/typora-user-images/image-20200903154843414.png)
+> > ![image-20200903154843414](/vno-jekyll/assets/images/juc/image-20200903154843414.png)
 > >
 > > **3、这时将k设置为3，继续循环，再次计算parent为1，queue[1]的时间间隔为3，因为 5 > 3 ，这时退出循环，最终k为3：**
 > >
-> > ![image-20200903154922980](/Users/peng/Library/Application Support/typora-user-images/image-20200903154922980.png)
+> > ![image-20200903154922980](/vno-jekyll/assets/images/juc/image-20200903154922980.png)
 >
 > 可见，每次新增节点时，只是根据父节点来判断，而不会影响兄弟节点。
 >
@@ -786,11 +788,11 @@ class Task implements Runnable {
 >
 > 假设初始的堆如下：
 >
-> ![image-20200903173946930](/Users/peng/Library/Application Support/typora-user-images/image-20200903173946930.png)
+> ![image-20200903173946930](/vno-jekyll/assets/images/juc/image-20200903173946930.png)
 >
 > 假设 k = 3 ，那么 k = half ，没有子节点，在执行siftDown方法时直接把索引为3的节点设置为数组的最后一个节点：
 >
-> ![image-20200903174008605](/Users/peng/Library/Application Support/typora-user-images/image-20200903174008605.png)
+> ![image-20200903174008605](/vno-jekyll/assets/images/juc/image-20200903174008605.png)
 >
 > **有子节点的情况：**
 >
@@ -798,25 +800,25 @@ class Task implements Runnable {
 >
 > > 1. 获取左子节点，child = 1 ，获取右子节点， right = 2 ：
 > >
-> >    ![image-20200903174109030](/Users/peng/Library/Application Support/typora-user-images/image-20200903174109030.png)
+> >    ![image-20200903174109030](/vno-jekyll/assets/images/juc/image-20200903174109030.png)
 > >
 > > 2. 由于 `right < size` ，这时比较左子节点和右子节点时间间隔的大小，这里 3 < 7 ，所以 c = queue[child] ；
 > >
 > > 3. 比较key的时间间隔是否小于c的时间间隔，这里不满足，继续执行，把索引为k的节点设置为c，然后将k设置为child，；
 > >
-> >    ![image-20200903174159317](/Users/peng/Library/Application Support/typora-user-images/image-20200903174159317.png)
+> >    ![image-20200903174159317](/vno-jekyll/assets/images/juc/image-20200903174159317.png)
 > >
 > > 4. 因为 half = 3 ，k = 1 ，继续执行循环，这时的索引变为：
 > >
-> >    ![image-20200903174240048](/Users/peng/Library/Application Support/typora-user-images/image-20200903174240048.png)
+> >    ![image-20200903174240048](/vno-jekyll/assets/images/juc/image-20200903174240048.png)
 > >
 > > 5. 这时再经过如上判断后，将k的值为3，最终的结果如下：
 > >
-> >    ![image-20200903174309107](/Users/peng/Library/Application Support/typora-user-images/image-20200903174309107.png)
+> >    ![image-20200903174309107](/vno-jekyll/assets/images/juc/image-20200903174309107.png)
 > >
 > > 6. 最后，如果在finishPoll方法中调用的话，会把索引为0的节点的索引设置为-1，表示已经删除了该节点，并且size也减了1，最后的结果如下：
 > >
-> >    ![image-20200903174336870](/Users/peng/Library/Application Support/typora-user-images/image-20200903174336870.png)
+> >    ![image-20200903174336870](/vno-jekyll/assets/images/juc/image-20200903174336870.png)
 >
 > 可见，siftdown方法在执行完并不是有序的，但可以发现，子节点的下次执行时间一定比父节点的下次执行时间要大，由于每次都会取左子节点和右子节点中下次执行时间最小的节点，所以还是可以保证在take和poll时出队是有序的。
 
@@ -853,19 +855,19 @@ class Task implements Runnable {
 >
 > 假设初始的堆结构如下：
 >
-> ![image-20200903174500070](/Users/peng/Library/Application Support/typora-user-images/image-20200903174500070.png)
+> ![image-20200903174500070](/vno-jekyll/assets/images/juc/image-20200903174500070.png)
 >
 > 这时要删除8的节点，那么这时 k = 1，key为最后一个节点：
 >
-> ![image-20200903174518582](/Users/peng/Library/Application Support/typora-user-images/image-20200903174518582.png)
+> ![image-20200903174518582](/vno-jekyll/assets/images/juc/image-20200903174518582.png)
 >
 > 这时通过上文对siftDown方法的分析，siftDown方法执行后的结果如下：
 >
-> ![image-20200903174550729](/Users/peng/Library/Application Support/typora-user-images/image-20200903174550729.png)
+> ![image-20200903174550729](/vno-jekyll/assets/images/juc/image-20200903174550729.png)
 >
 > 这时会发现，最后一个节点的值比父节点还要小，所以这里要执行一次siftUp方法来保证子节点的下次执行时间要比父节点的大，所以最终结果如下：
 >
-> ![image-20200903174610842](/Users/peng/Library/Application Support/typora-user-images/image-20200903174610842.png)
+> ![image-20200903174610842](/vno-jekyll/assets/images/juc/image-20200903174610842.png)
 
 ### 5、总结
 
@@ -879,38 +881,3 @@ class Task implements Runnable {
 > - 详细分析了DelayedWorkQueue的数据结构，它是一个基于最小堆结构的优先队列，并且每次出队时能够保证取出的任务是当前队列中下次执行时间最小的任务。同时注意一下优先队列中堆的顺序，堆中的顺序并不是绝对的，但要保证子节点的值要比父节点的值要大，这样就不会影响出队的顺序。
 >
 > 总体来说，ScheduedThreadPoolExecutor的重点是要理解下次执行时间的计算，以及优先队列的出队、入队和删除的过程，这两个是理解ScheduedThreadPoolExecutor的关键。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
