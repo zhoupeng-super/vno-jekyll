@@ -1,4 +1,9 @@
-# ScheduledThreadPoolExecutor
+---
+layout: post
+title: ScheduledThreadPoolExecutor - juc
+date: 2020-09-04
+---
+
 ### 1、介绍：
 > 自JDK1.5开始，JDK提供了ScheduledThreadPoolExecutor类来支持周期性的调度，在这之前的实现需要Timer和TimerTask或者第三方工具完成。但Timer有很多缺陷。
 
@@ -76,7 +81,7 @@ class Task implements Runnable {
 
 #### 3.1、ScheduledThreadPoolExecutor的类结构
 
-![diagram](images/diagram.png)
+![diagram](/vno-jekyll/assets/images/juc/diagram.png)
 
 >  其中包含了有关调度和队列的接口
 >
