@@ -76,7 +76,7 @@ class Task implements Runnable {
 
 #### 3.1、ScheduledThreadPoolExecutor的类结构
 
-![diagram](/Users/peng/Desktop/diagram.png)
+![diagram](images/diagram.png)
 
 >  其中包含了有关调度和队列的接口
 >
